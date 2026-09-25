@@ -1,7 +1,7 @@
 from app.db.config import connect_to_database
 from app.db.import_data import import_data
 
-
+# separate import app as its needed only once
 def main():
     print("Application started")
 
