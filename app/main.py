@@ -1,17 +1,15 @@
-from db.config import connect_to_database
-from db.import_data import import_data
+from fastapi import FastAPI
+from app.api.trades import router as trades_router
 
+app = FastAPI(
+    title="Trade API",
+    version="1"
+)
+app.include_router(trades_router)
 
-def main():
-    print("Application started")
-
-    print("Database connection started")
-    connection = connect_to_database()
-
-    print("Importing data from sheet to database")
-    import_data(connection)
-
-    print("Application finished")
+@app.get("/")
+def root():
+    return {"message": "API is working"}
 
 
 if __name__ == "__main__":
