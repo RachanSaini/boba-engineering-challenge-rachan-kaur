@@ -8,34 +8,6 @@ router = APIRouter()
 
 connection = connect_to_database()
 
-# Retrieve a Trade by its ID
-@router.get("/trades/{trade_id}")
-def get_trades(trade_id: int):
-    try:
-        query = text("""
-            SELECT * FROM tradesdb WHERE trade_id = :trade_id
-        """)
-
-        with connection.connect() as db:
-            result = db.execute(
-                query,
-                {"trade_id": trade_id}
-            )
-            trade = result.mappings().first()
-        if trade is None:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Trade {trade_id} not found"
-            )
-
-        return trade
-    
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to retrieve trade: {str(e)}"
-        )
-
 # Search Trades via filtering
 @router.get("/trades")
 def get_tradesbyfilter(
@@ -73,3 +45,65 @@ def get_tradesbyfilter(
             detail=f"Failed to retrieve trades: {str(e)}"
         )
 
+# Get historical trade summary
+@router.get("/trades/history")
+def get_trade_history():
+    try:
+        query = text("""
+            SELECT
+                commodity,
+                contract,
+                COUNT(*) AS trade_count,
+                SUM(size) AS net_quantity,
+                SUM(ABS(size)) AS total_traded_quantity,
+                AVG(entry_price) AS average_entry_price,
+                MIN(trade_date) AS first_trade_date,
+                MAX(trade_date) AS last_trade_date
+            FROM tradesdb
+            GROUP BY
+                commodity,
+                contract
+            ORDER BY
+                commodity,
+                contract
+        """)
+
+        with connection.connect() as db:
+            result = db.execute(query)
+            history = result.mappings().all()
+
+        return history
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retrieve trade history: {str(e)}"
+        )
+
+# Retrieve a Trade by its ID
+@router.get("/trades/{trade_id}")
+def get_trades(trade_id: int):
+    try:
+        query = text("""
+            SELECT * FROM tradesdb WHERE trade_id = :trade_id
+        """)
+
+        with connection.connect() as db:
+            result = db.execute(
+                query,
+                {"trade_id": trade_id}
+            )
+            trade = result.mappings().first()
+        if trade is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Trade {trade_id} not found"
+            )
+
+        return trade
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retrieve trade: {str(e)}"
+        )
