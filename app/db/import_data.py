@@ -1,5 +1,12 @@
 import pandas as pd
+from pathlib import Path
 
+REQUIRED_COLUMNS = [
+    "trade_id",
+    "commodity",
+    "contract",
+    "trader"
+]
 
 def import_data(connection):
     print("Reading Excel file...")
@@ -7,14 +14,19 @@ def import_data(connection):
     # Excel file location
     file_path = "app/db/sheet/trades.xlsx"
 
+# Read Data
     # Read Excel sheet
     df = pd.read_excel(
         file_path,
         sheet_name="new_trade_data"
     )
 
-    print(f"Read {len(df)} rows from Excel")    
+    print(f"Read {len(df)} rows from Excel")
 
+    # Add source filename
+    df["source_file"] = Path(file_path).name
+
+# Validate data
     df = df.rename(columns={
         "Trade ID": "trade_id",
         "Realised (R)/Unrealised(UR)": "trade_status",
@@ -40,16 +52,86 @@ def import_data(connection):
         "Average Stop": "average_stop"
     })
 
-    print("\nColumns after normalization:")
-    print(df.columns.tolist())
+    print("\nColumns normalization done")
+
+    print("\nValidating data...")
 
 
-    # Insert data into PostgreSQL
+    # Checking required columns exist
+    missing_columns = [
+        column
+        for column in REQUIRED_COLUMNS
+        if column not in df.columns
+    ]
+
+    if missing_columns:
+        raise ValueError(
+            f"Missing required columns: {missing_columns}"
+        )
+    
+    # remove missing rows (future)
+
+    # Clean whitespaces
+    string_columns = df.select_dtypes(include="object").columns
+
+    for column in string_columns:
+        df[column] = df[column].apply(
+            lambda value: value.strip()
+            if isinstance(value, str)
+            else value
+        )
+    
+    # Check required fields are not empty
+    invalid_required = df[
+        df[REQUIRED_COLUMNS].isnull().any(axis=1)
+    ]
+
+    print(
+        f"Rows missing required values: "
+        f"{len(invalid_required)}"
+    )
+
+    # Validate trade_id
+    invalid_trade_id = df[
+        pd.to_numeric(df["trade_id"], errors="coerce").isnull()
+    ]
+
+    print(
+        f"Rows with invalid trade_id: "
+        f"{len(invalid_trade_id)}"
+    )
+
+    # Validate size
+    invalid_size = df[
+        pd.to_numeric(df["size"], errors="coerce").isnull()
+    ]
+
+    print(
+        f"Rows with invalid size: "
+        f"{len(invalid_size)}"
+    )
+
+    # Check duplicate trade IDs
+    duplicate_trade_ids = df[
+        df["trade_id"].duplicated(keep=False)
+    ]
+
+    print(
+        f"Rows with duplicate trade IDs: "
+        f"{len(duplicate_trade_ids)}"
+    )
+
+# Insert valid data
     df.to_sql(
         "tradesdb",
         connection,
         if_exists="append",
         index=False
+    )
+
+    print(
+        f"Successfully imported "
+        f"{len(df)} rows"
     )
 
     print(f"Successfully imported {len(df)} rows into PostgreSQL")
