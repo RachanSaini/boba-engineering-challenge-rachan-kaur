@@ -123,7 +123,7 @@ def import_data(connection):
 
 # Insert valid data
     df.to_sql(
-        "tradesdb",
+        "trades",
         connection,
         if_exists="append",
         index=False

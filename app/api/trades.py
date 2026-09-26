@@ -6,7 +6,8 @@ from typing import Optional
 
 router = APIRouter()
 
-connection = connect_to_database()
+def get_connection():
+    return connect_to_database()
 
 # Search Trades via filtering
 @router.get("/trades")
@@ -16,6 +17,7 @@ def get_tradesbyfilter(
     trader: Optional[str] = None
 ):
     try:
+        connection = get_connection()
         query = """
             SELECT * FROM tradesdb WHERE 1 = 1
         """
@@ -49,6 +51,7 @@ def get_tradesbyfilter(
 @router.get("/trades/history")
 def get_trade_history():
     try:
+        connection = get_connection()
         query = text("""
             SELECT
                 commodity,
@@ -84,6 +87,7 @@ def get_trade_history():
 @router.get("/trades/{trade_id}")
 def get_trades(trade_id: int):
     try:
+        connection = get_connection()
         query = text("""
             SELECT * FROM tradesdb WHERE trade_id = :trade_id
         """)
@@ -103,7 +107,9 @@ def get_trades(trade_id: int):
         return trade
     
     except Exception as e:
+        print(f"Error: {e}")
+
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to retrieve trade: {str(e)}"
+            status_code=404,
+            detail=f"Trade not found: {str(e)}"
         )
