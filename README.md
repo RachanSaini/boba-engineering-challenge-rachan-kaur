@@ -7,7 +7,7 @@ The application supports:
 * Importing trade data from the supplied Excel file
 * Data validation and normalization during import
 * Retrieving individual trades
-* Filtering trades by commodity, contract, and trader
+* Filtering trades by commodity, contract, trader and Realeased or Unrealeased trades
 * Providing historical trade summaries
 * API tests using mock database data
 * Database integration tests against PostgreSQL
@@ -290,7 +290,21 @@ GET /trades?contract={contract}
 GET /trades?trader={trader}
 ```
 
-Multiple filters can be combined:
+---
+
+## Filter trades by Released or Unreleased trades
+
+For released reades
+```http
+GET /trades?trade=R
+```
+
+For unreleased reades
+```http
+GET /trades?trade=UR
+```
+
+## Multiple filters can be combined:
 
 ```http
 GET /trades?commodity={commodity}&contract={contract}&trader=Trader{trader}
