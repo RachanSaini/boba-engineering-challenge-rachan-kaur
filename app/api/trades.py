@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from sqlalchemy import text
 
 from app.db.config import connect_to_database
-from typing import Optional
+from typing import Optional,Literal
 
 router = APIRouter()
 
@@ -14,12 +14,13 @@ def get_connection():
 def get_tradesbyfilter(
     commodity: Optional[str] = None,
     contract: Optional[str] = None,
-    trader: Optional[str] = None
+    trader: Optional[str] = None,
+    trade: Optional[Literal["R", "UR"]] = None
 ):
     try:
         connection = get_connection()
         query = """
-            SELECT * FROM tradesdb WHERE 1 = 1
+            SELECT * FROM trades WHERE 1 = 1
         """
 
         parameters = {}
@@ -29,9 +30,12 @@ def get_tradesbyfilter(
         if contract is not None:
             query += " AND contract = :contract"
             parameters["contract"] = contract
-        if commodity is not None:
+        if trader is not None:
             query += " AND trader = :trader"
             parameters["trader"] = trader
+        if trade is not None:
+            query += " AND trade_status = :trade"
+            parameters["trade"] = trade
 
         with connection.connect() as db:
             result = db.execute(
@@ -62,7 +66,7 @@ def get_trade_history():
                 AVG(entry_price) AS average_entry_price,
                 MIN(trade_date) AS first_trade_date,
                 MAX(trade_date) AS last_trade_date
-            FROM tradesdb
+            FROM trades
             GROUP BY
                 commodity,
                 contract
@@ -81,7 +85,7 @@ def get_trade_history():
         raise HTTPException(
             status_code=500,
             detail=f"Failed to retrieve trade history: {str(e)}"
-        )
+        ) 
 
 # Retrieve a Trade by its ID
 @router.get("/trades/{trade_id}")
@@ -89,7 +93,7 @@ def get_trades(trade_id: int):
     try:
         connection = get_connection()
         query = text("""
-            SELECT * FROM tradesdb WHERE trade_id = :trade_id
+            SELECT * FROM trades WHERE trade_id = :trade_id
         """)
 
         with connection.connect() as db:
