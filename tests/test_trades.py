@@ -238,3 +238,98 @@ def test_get_trade_history():
         assert "contract" in item
         assert "trade_count" in item
         assert "net_quantity" in item
+
+# Testing positions endpoint
+def test_get_positions():
+    mock_connection = create_mock_connection([
+        {
+            "commodity": "Gold",
+            "contract": "Dec-26",
+            "net_quantity": 5
+        },
+        {
+            "commodity": "Silver",
+            "contract": "Jan-27",
+            "net_quantity": 20
+        }
+    ])
+
+    with patch(
+        "app.api.trades.get_connection",
+        return_value=mock_connection
+    ):
+        response = client.get("/positions")
+
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+    assert response.json()[0]["net_quantity"] == 5
+
+
+def test_filter_positions_by_commodity():
+    mock_connection = create_mock_connection([
+        {
+            "commodity": "Gold",
+            "contract": "Dec-26",
+            "net_quantity": 5
+        }
+    ])
+
+    with patch(
+        "app.api.trades.get_connection",
+        return_value=mock_connection
+    ):
+        response = client.get("/positions?commodity=Gold")
+
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+    assert response.json()[0]["commodity"] == "Gold"
+
+
+def test_filter_positions_by_contract():
+    mock_connection = create_mock_connection([
+        {
+            "commodity": "Gold",
+            "contract": "Dec-26",
+            "net_quantity": 5
+        }
+    ])
+
+    with patch(
+        "app.api.trades.get_connection",
+        return_value=mock_connection
+    ):
+        response = client.get("/positions?contract=Dec-26")
+
+    assert response.status_code == 200
+    assert all(
+        position["contract"] == "Dec-26"
+        for position in response.json()
+    )
+
+
+def test_filter_positions_by_both():
+    mock_connection = create_mock_connection([
+
+        {
+            "commodity": "Gold",
+            "contract": "Dec-26",
+            "net_quantity": 5
+        }
+    ])
+
+    with patch(
+        "app.api.trades.get_connection",
+        return_value=mock_connection
+    ):
+        response = client.get(
+            "/positions?commodity=Gold&contract=Dec-26"
+        )
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "commodity": "Gold",
+            "contract": "Dec-26",
+            "net_quantity": 5
+        }
+    ]
