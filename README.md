@@ -535,3 +535,17 @@ python -m uvicorn app.main:app --reload
 # 7. Run tests
 python -m pytest -v
 ```
+
+# Future works:
+1. Daily Excel file uploads
+    Allow users to upload new Excel files containing daily trade data. Uploaded files could be validated automatically and, if valid, imported into the trades database for use by the application.
+2. End-to-end integration tests
+    Add integration tests covering the complete application flow, from connecting to PostgreSQL and importing trade data through to querying the API endpoints.
+3. Additional functionality
+    Add the ability to access and filter trades by date.
+    Add functionality to analyse trader accuracy based on realised and unrealised trades and define appropriate accuracy metrics.
+4. Containerizing the application using Docker or Kubernetes
+
+# Reviews
+
+BobaReviews: added remote Bobareviews
