@@ -504,7 +504,7 @@ The implementation makes the following assumptions:
 
 ---
 
-# 16. Quick Start
+# 15. Quick Start
 
 For a clean development environment, the main workflow is:
 
@@ -536,7 +536,7 @@ python -m uvicorn app.main:app --reload
 python -m pytest -v
 ```
 
-# Future works:
+# 16. Future works:
 1. Daily Excel file uploads
     Allow users to upload new Excel files containing daily trade data. Uploaded files could be validated automatically and, if valid, imported into the trades database for use by the application.
 2. End-to-end integration tests
