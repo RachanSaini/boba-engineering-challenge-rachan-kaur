@@ -8,6 +8,7 @@ The application supports:
 * Data validation and normalization during import
 * Retrieving individual trades
 * Filtering trades by commodity, contract, trader and Realeased or Unrealeased trades
+* Filtering trades by commodity, contract to get positions(calculated the net quantity using SUM(size))
 * Providing historical trade summaries
 * API tests using mock database data
 * Database integration tests against PostgreSQL
@@ -252,7 +253,7 @@ http://localhost:8000
 
 # 10. API Endpoints
 
-I used Postman for testing endpoints or simply curl commands to test endpoints.
+I used Postman for testing endpoints or simply curl commands.
 
 ## Get all trades
 
@@ -324,14 +325,31 @@ Example:
 GET /trades/10000
 ```
 
-The response contains the key trade information including:
+## Get position by commodity or contract
 
-* `trade_id`
-* `commodity`
-* `contract`
-* `size`
-* `trader`
-* `source_file`
+All commodity contracts
+```http
+GET /positions
+```
+
+Particular commodity
+```http	
+GET /positions?commodity={commodity}
+```
+	
+
+Particular contract
+```http
+GET /positions?contract={contract}
+```
+	
+
+All commodities with that contract
+```http
+GET /positions?commodity={commodity}&contract={contract}
+```
+
+The response contains the key trade information
 
 If the trade does not exist, the API returns HTTP error.
 

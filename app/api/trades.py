@@ -7,7 +7,13 @@ from typing import Optional,Literal
 router = APIRouter()
 
 def get_connection():
-    return connect_to_database()
+    connection = connect_to_database()
+    if connection is None:
+        raise HTTPException(
+        status_code=500,
+        detail="Database connection failed"
+    )
+    return connection
 
 # Search Trades via filtering
 @router.get("/trades")
@@ -19,6 +25,7 @@ def get_tradesbyfilter(
 ):
     try:
         connection = get_connection()
+
         query = """
             SELECT * FROM trades WHERE 1 = 1
         """
@@ -45,6 +52,7 @@ def get_tradesbyfilter(
         rows = result.mappings().all()
 
         return rows
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -56,6 +64,7 @@ def get_tradesbyfilter(
 def get_trade_history():
     try:
         connection = get_connection()
+
         query = text("""
             SELECT
                 commodity,
@@ -92,6 +101,7 @@ def get_trade_history():
 def get_trades(trade_id: int):
     try:
         connection = get_connection()
+
         query = text("""
             SELECT * FROM trades WHERE trade_id = :trade_id
         """)
@@ -116,4 +126,47 @@ def get_trades(trade_id: int):
         raise HTTPException(
             status_code=404,
             detail=f"Trade not found: {str(e)}"
+        )
+
+@router.get("/positions")
+def get_positions(
+    commodity: Optional[str] = None,
+    contract: Optional[str] = None 
+):
+    try:
+        connection = get_connection()
+
+        query = """
+            SELECT
+                commodity,
+                contract,
+                SUM(size) AS net_quantity
+            FROM trades
+            WHERE 1 = 1
+        """
+
+        parameters = {}
+        if commodity is not None:
+            query += " AND commodity = :commodity"
+            parameters["commodity"] = commodity
+
+        if contract is not None:
+            query += " AND contract = :contract"
+            parameters["contract"] = contract
+
+        query += """
+            GROUP BY commodity, contract
+            ORDER BY commodity, contract
+        """
+
+        with connection.connect() as db:
+            result = db.execute(text(query), parameters)
+            rows = result.mappings().all()
+
+        return rows
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retrieve positions: {str(e)}"
         )
