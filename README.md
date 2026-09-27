@@ -190,12 +190,10 @@ The importer:
 2. Normalizes the column names
 3. Adds the source filename to each record
 4. Removes leading/trailing whitespace from string values
-5. Checks that required columns exist
-6. Checks required fields
-7. Validates `trade_id`
-8. Validates `size`
-9. Checks for duplicate trade IDs
-10. Inserts the data into the PostgreSQL `trades` table
+5. Checks required fields
+6. Validates `trade_id`
+7. Validates `size`
+9. Inserts the data into the PostgreSQL `trades` table
 
 Run the import from the project root:
 
@@ -253,7 +251,7 @@ http://localhost:8000
 
 # 10. API Endpoints
 
-I used Postman for testing endpoints or simply curl commands.
+I used Postman for testing endpoints or simply use curl commands.
 
 ## Get all trades
 
@@ -520,11 +518,11 @@ pip install -r requirements.txt
 createdb -U postgres tradesdb
 
 # 4. Configure .env
-# DB_USER=postgres
-# DB_PASSWORD=your_password
-# DB_HOST=localhost
-# DB_PORT=5432
-# DB_NAME=tradesdb
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=tradesdb
 
 # 5. Import Excel data
 python -m app.import_data
