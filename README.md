@@ -544,7 +544,9 @@ python -m pytest -v
 3. Additional functionality
     Add the ability to access and filter trades by date.
     Add functionality to analyse trader accuracy based on realised and unrealised trades and define appropriate accuracy metrics.
-4. Containerizing the application using Docker or Kubernetes
+4. Containerising the application
+   Containerise the application using Docker to provide a consistent and reproducible development and deployment environment. Kubernetes could be considered for orchestration and scaling if the application grows.
+
 
 # Reviews
 
